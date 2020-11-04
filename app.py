@@ -1,58 +1,55 @@
+
 from flask import Flask, request
-import json
-import time
+import json, time
 
 app = Flask(__name__)
 
 
 def update_file(accounts):
     with open('accounts.json', 'w') as file:
-        file.write(accounts)
+        accounts["timestamp"] = time.time()
+        file.write(json.dumps(accounts))
 
 
-def init():
-    # Fill accounts dict
-    with open('accounts.json', 'r') as f:
-        acc_dict = json.load(f)
+with open('accounts.json', 'r') as f:
+    acc_dict = json.load(f)
 
 
 @app.route('/', methods=['GET'])
 def all_account_balances():
-    # Case A - Returns all account balances
-    return "", 200
-
-    # Case B - Return failed
-    return "", 401
+    return json.dumps(acc_dict), 200
 
 
 @app.route('/<address>', methods=['POST'])
 def register(address):
-    # Case A - New account created
-    # Crate acc and save to .json
-    return "", 200
-
-    # Case B - Account found
-    return "", 401
+    if address not in acc_dict:
+        acc_dict[address] = 0
+        update_file(acc_dict)
+        return "", 200
+    else:
+        return "", 401
 
 
 @app.route('/<sender>/<receiver>/<amount>', methods=['POST'])
 def transfer(sender, receiver, amount):
-    # Case A - Transfer completed
-    return "", 200
+    if sender in acc_dict and receiver in acc_dict:
+        amount = int(amount)
+        if acc_dict[sender] >= amount:
+            acc_dict[sender] -= amount
+            acc_dict[receiver] += amount
+            update_file(acc_dict)
+            return "", 200
 
-    # Case B - Transfer failed
     return "", 401
 
 
 @app.route('/<address>', methods=['GET'])
 def balance(address):
-    # Case A - Return account balance
-    return "", 200
-
-    # Case B - Failed
-    return "", 401
+    if address in acc_dict:
+        return str(acc_dict[address]), 200
+    else:
+        return "", 401
 
 
 if __name__ == '__main__':
-    init()
     app.run()
