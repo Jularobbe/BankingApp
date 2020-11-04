@@ -1,0 +1,16 @@
+{
+  "accounts": [
+    {
+      "account": 123456,
+      "amount": 1000
+    },
+    {
+      "account": 123457,
+      "amount": 1200
+    },
+    {
+      "account": 123458,
+      "amount": 500
+    }
+  ]
+}
