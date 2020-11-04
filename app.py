@@ -8,40 +8,42 @@ app = Flask(__name__)
 with open('accounts.json', 'r') as f:
     acc_dict = json.load(f)
 
-# ToDo get information from other clients
+
+@app.route('/', methods=['GET'])
+def all_account_balances():
+    # Case A - Returns all account balances
+    return "", 200
+
+    # Case B - Return failed
+    return "", 401
 
 
-# noinspection PyUnreachableCode
-@app.route('/zubuchen')
-def main():
-    args = request.args.to_dict()
+@app.route('/<address>', methods=['POST'])
+def register(address):
+    # Case A - New account created
+    # Crate acc and save to .json
+    return "", 200
 
-    # Case - invalid parameters
-    if len(args.keys()) != 3:
-        return "Invalid parameters", 400
+    # Case B - Account found
+    return "", 401
 
-    # Get parameters
-    sender_id = args["S"]
-    receiver_id = args["E"]
-    amount = args["B"]
 
-    # Case - account not found
-    if False:
-        # ToDo create account
-        return "Account created", 201
+@app.route('/<sender>/<receiver>/<amount>', methods=['POST'])
+def transfer(sender, receiver, amount):
+    # Case A - Transfer completed
+    return "", 200
 
-    # Case - account overspent
-    if acc_dict[sender_id] < amount:
-        # Abort transaction
-        return "Account overspent", 205
+    # Case B - Transfer failed
+    return "", 401
 
-    # Case - checks okay
-    # Change value for accounts (send_acc - amount; receive_acc + amount)
 
-    # Broadcast change to other clients
+@app.route('/<address>', methods=['GET'])
+def balance(address):
+    # Case A - Return account balance
+    return "", 200
 
-    # Transaction completed
-    return "Thanks", 200
+    # Case B - Failed
+    return "", 401
 
 
 if __name__ == '__main__':
