@@ -4,9 +4,16 @@ import time
 
 app = Flask(__name__)
 
-# Fill accounts dict
-with open('accounts.json', 'r') as f:
-    acc_dict = json.load(f)
+
+def update_file(accounts):
+    with open('accounts.json', 'w') as file:
+        file.write(accounts)
+
+
+def init():
+    # Fill accounts dict
+    with open('accounts.json', 'r') as f:
+        acc_dict = json.load(f)
 
 
 @app.route('/', methods=['GET'])
@@ -47,4 +54,5 @@ def balance(address):
 
 
 if __name__ == '__main__':
+    init()
     app.run()
