@@ -1,8 +1,13 @@
 from flask import Flask, request
+import json
 
 app = Flask(__name__)
 
-# Create 'db' file if it doesnt exist / get information from other clients
+# Fill accounts dict
+with open('accounts.json', 'r') as f:
+    acc_dict = json.load(f)
+
+# ToDo get information from other clients
 
 # Read file as dict (id;amount)
 
