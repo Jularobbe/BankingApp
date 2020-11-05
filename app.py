@@ -1,31 +1,17 @@
-
-from flask import Flask
-import json
+from flask import Flask, jsonify, json
 import requests
-import time
-import atexit
-from apscheduler.schedulers.background import BackgroundScheduler
 
 app = Flask(__name__)
+
+with open('accounts.json', 'r') as accounts_file:
+    accounts_dict = json.load(accounts_file)
+with open('clients.json', 'r') as clients_file:
+    clients_dict = json.load(clients_file)
 
 
 def update_file(accounts):
     with open('accounts.json', 'w') as file:
         file.write(json.dumps(accounts))
-
-
-def synch_file():
-    with open('servers', 'r') as file:
-        servers = json.load(file)
-
-    data_set = set({})
-
-    for i in servers:
-        data_set.add(requests.get(i))
-
-    if len(data_set) <= 1:
-        with open('accounts.json', 'w') as file:
-            file.write(json.dumps(data_set))
 
 
 def export_form(accounts):
@@ -36,23 +22,37 @@ def export_form(accounts):
             "balance": accounts.get(acc)
         }
         export.append(form)
-    return json.dumps(export)
+    return export
+
+def import_form(export):
+    import_dict = {}
+    for acc in export:
+        import_dict[acc.get("address")] = acc.get("balance")
+    return import_dict
 
 
-with open('accounts.json', 'r') as f:
-    acc_dict = json.load(f)
+def update_accounts(data):
+    update = import_form(data)
+    if len(update) > len(accounts_dict):
+        return update
+    else:
+        for entry in update.keys():
+            if update.get(entry) != accounts_dict.get(entry):
+                return update
+    return accounts_dict
 
 
 @app.route('/', methods=['GET'])
 def all_account_balances():
-    return export_form(acc_dict), 200
+    return jsonify(export_form(accounts_dict)), 200
 
 
 @app.route('/<address>', methods=['POST'])
 def register(address):
-    if address not in acc_dict:
-        acc_dict[address] = 0
-        update_file(acc_dict)
+    [update_accounts(requests.get("http://" + clients_dict[client]).json()) for client in clients_dict]
+    if address not in accounts_dict:
+        accounts_dict[address] = 0
+        update_file(accounts_dict)
         return "", 200
     else:
         return "", 401
@@ -60,12 +60,13 @@ def register(address):
 
 @app.route('/<sender>/<receiver>/<amount>', methods=['POST'])
 def transfer(sender, receiver, amount):
-    if sender in acc_dict and receiver in acc_dict:
+    [update_accounts(requests.get("http://" + clients_dict[client]).json()) for client in clients_dict]
+    if sender in accounts_dict and receiver in accounts_dict:
         amount = int(amount)
-        if acc_dict[sender] >= amount:
-            acc_dict[sender] -= amount
-            acc_dict[receiver] += amount
-            update_file(acc_dict)
+        if accounts_dict[sender] >= amount:
+            accounts_dict[sender] -= amount
+            accounts_dict[receiver] += amount
+            update_file(accounts_dict)
             return "", 200
 
     return "", 401
@@ -73,12 +74,12 @@ def transfer(sender, receiver, amount):
 
 @app.route('/<address>', methods=['GET'])
 def balance(address):
-    if address in acc_dict:
-        return str(acc_dict[address]), 200
+    [update_accounts(requests.get("http://" + clients_dict[client]).json()) for client in clients_dict]
+    if address in accounts_dict:
+        return str(accounts_dict[address]), 200
     else:
         return "", 401
 
 
 if __name__ == '__main__':
-
     app.run()
