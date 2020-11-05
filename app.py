@@ -16,8 +16,8 @@ def export_form(accounts):
             "address": acc,
             "balance": accounts.get(acc)
         }
-        export.append(json.dumps(form))
-    return str(export)
+        export.append(form)
+    return json.dumps(export)
 
 with open('accounts.json', 'r') as f:
     acc_dict = json.load(f)
