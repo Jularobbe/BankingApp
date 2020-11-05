@@ -1,6 +1,10 @@
 
 from flask import Flask
 import json
+import requests
+import time
+import atexit
+from apscheduler.schedulers.background import BackgroundScheduler
 
 app = Flask(__name__)
 
@@ -8,6 +12,21 @@ app = Flask(__name__)
 def update_file(accounts):
     with open('accounts.json', 'w') as file:
         file.write(json.dumps(accounts))
+
+
+def synch_file():
+    with open('servers', 'r') as file:
+        servers = json.load(file)
+
+    data_set = set({})
+
+    for i in servers:
+        data_set.add(requests.get(i))
+
+    if len(data_set) <= 1:
+        with open('accounts.json', 'w') as file:
+            file.write(json.dumps(data_set))
+
 
 def export_form(accounts):
     export = []
@@ -18,6 +37,7 @@ def export_form(accounts):
         }
         export.append(form)
     return json.dumps(export)
+
 
 with open('accounts.json', 'r') as f:
     acc_dict = json.load(f)
@@ -60,4 +80,5 @@ def balance(address):
 
 
 if __name__ == '__main__':
+
     app.run()
