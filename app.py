@@ -1,15 +1,23 @@
 
-from flask import Flask, request
-import json, time
+from flask import Flask
+import json
 
 app = Flask(__name__)
 
 
 def update_file(accounts):
     with open('accounts.json', 'w') as file:
-        accounts["timestamp"] = time.time()
         file.write(json.dumps(accounts))
 
+def export_form(accounts):
+    export = []
+    for acc in accounts.keys():
+        form = {
+            "address": acc,
+            "balance": accounts.get(acc)
+        }
+        export.append(json.dumps(form))
+    return str(export)
 
 with open('accounts.json', 'r') as f:
     acc_dict = json.load(f)
@@ -17,7 +25,7 @@ with open('accounts.json', 'r') as f:
 
 @app.route('/', methods=['GET'])
 def all_account_balances():
-    return json.dumps(acc_dict), 200
+    return export_form(acc_dict), 200
 
 
 @app.route('/<address>', methods=['POST'])
