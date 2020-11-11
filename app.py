@@ -42,7 +42,7 @@ def update_accounts(data):
     return accounts_dict
 
 
-@app.route('/', methods=['GET'])
+@app.route('/all', methods=['GET'])
 def all_account_balances():
     return jsonify(export_form(accounts_dict)), 200
 
